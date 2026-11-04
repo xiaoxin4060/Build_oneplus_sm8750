@@ -653,6 +653,19 @@ jobs:
         run: 
           echo "BUILD_START=$(date +%s)" >> $GITHUB_ENV
 
+      # 新版 clang 对旧 libbpf 的 const 限定符告警会因 -Werror 变成硬错误
+      # （tools/bpf/resolve_btfids 的 libbpf.c 只用于生成 BTF，放宽 -Werror 不影响内核代码）
+      - name: 🩹 Relax libbpf -Werror (兼容新版 clang)
+        run: |
+          F="kernel_workspace/common/tools/lib/bpf/Makefile"
+          if [ -f "$F" ]; then
+            sed -i 's/^override CFLAGS += -Werror -Wall$/override CFLAGS += -Wall/' "$F"
+            echo "==> 已处理 $F"
+            grep -n 'override CFLAGS += ' "$F" || true
+          else
+            echo "::warning::未找到 $F"
+          fi
+
 
       - name: 🔨 Build Kernel (构建内核)
         run: |
