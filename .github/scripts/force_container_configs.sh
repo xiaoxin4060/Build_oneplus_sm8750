@@ -29,11 +29,12 @@ echo "===== [1/6] SYSVIPC first (IPC_NS depends on it) ====="
 pass
 
 echo "===== [2/6] namespaces + container filesystems ====="
-# DEVTMPFS_MOUNT stays OFF to match stock: Android init manages /dev itself.
+# DEVTMPFS/DEVTMPFS_MOUNT left untouched: stock ColorOS kernel ships DEVTMPFS=n
+# (verified via IKCONFIG of the booting run #19); forcing it on breaks early boot.
 ./scripts/config --file "$CFG" \
   -e PID_NS -e IPC_NS -e USER_NS -e UTS_NS -e NET_NS \
   -e POSIX_MQUEUE -e POSIX_MQUEUE_SYSCTL \
-  -e DEVTMPFS -d DEVTMPFS_MOUNT -e TMPFS -e TMPFS_XATTR -e TMPFS_POSIX_ACL
+  -e TMPFS -e TMPFS_XATTR -e TMPFS_POSIX_ACL
 pass
 
 echo "===== [3/6] nftables core (default backend of modern docker/podman) ====="
