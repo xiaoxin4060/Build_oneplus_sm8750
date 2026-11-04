@@ -730,9 +730,17 @@ jobs:
           sudo rm -rf /opt/ghc &
           sudo rm -rf /opt/hostedtoolcache/CodeQL &
           make -j$(nproc --all) LLVM=1 ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- CC="ccache clang" LD="ld.lld" HOSTLD=ld.lld O=out KCFLAGS+=-O2 KCFLAGS+=-Wno-error gki_defconfig &&
-          patch -p1 --forward < "$GITHUB_WORKSPACE/patch/sched_kabi_fix.patch" || exit 1
-          bash "$GITHUB_WORKSPACE/.github/scripts/force_container_configs.sh" || exit 1
-          make -j$(nproc --all) LLVM=1 ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- CC="$(pwd)/cc-wrapper" LD="$(pwd)/ld-wrapper" HOSTLD=ld.lld O=out KCFLAGS+=-O2 KCFLAGS+=-Wno-error Image
+          patch -p1 --forward < "$GITHUB_WORKSPACE/patch/sched_kabi_fix.patch" 2>&1 | tee /tmp/patch_out.txt
+          PATCH_RC=${PIPESTATUS[0]}
+          echo "PATCH_RC=$PATCH_RC"
+          grep -n "sysvsem\|sysvshm\|ANDROID_KABI_USE(1" include/linux/sched.h > /tmp/sched_check.txt || true
+          bash "$GITHUB_WORKSPACE/.github/scripts/force_container_configs.sh" 2>&1 | tee /tmp/cfg_out.txt
+          CFG_RC=${PIPESTATUS[0]}
+          echo "CFG_RC=$CFG_RC"
+          make -j$(nproc --all) LLVM=1 ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- CC="$(pwd)/cc-wrapper" LD="$(pwd)/ld-wrapper" HOSTLD=ld.lld O=out KCFLAGS+=-O2 KCFLAGS+=-Wno-error Image 2>&1 | tee /tmp/make_out.txt
+          MAKE_RC=${PIPESTATUS[0]}
+          echo "MAKE_RC=$MAKE_RC"
+          if [ "$PATCH_RC" != "0" ] || [ "$CFG_RC" != "0" ] || [ "$MAKE_RC" != "0" ]; then exit 1; fi
           LD_PRELOAD=$PRELOAD_LIBS stat ./Makefile
           echo "ccache 状态："
           ccache -s
@@ -762,6 +770,19 @@ jobs:
           echo "===== KMI 符号是否存在于源码 Kconfig ====="
           grep -rln "GKI_DYNAMIC_TASK_STRUCT_SIZE" --include="Kconfig*" kernel_workspace/common 2>/dev/null | head -3 || echo "(源码中未定义)"
           grep -rln "ARCH_WANTS_DYNAMIC_TASK_STRUCT" --include="Kconfig*" kernel_workspace/common 2>/dev/null | head -3 || echo "(源码中未定义)"
+
+      - name: 🩹 Upload failure diagnostics (失败诊断上传)
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: failure_diag
+          path: |
+            /tmp/patch_out.txt
+            /tmp/sched_check.txt
+            /tmp/cfg_out.txt
+            /tmp/make_out.txt
+          if-no-files-found: ignore
+          retention-days: 3
 
       - name: 📤 Upload raw Image (上传原始镜像供本地体检)
         if: always()
