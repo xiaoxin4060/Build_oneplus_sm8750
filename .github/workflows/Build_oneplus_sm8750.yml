@@ -730,9 +730,7 @@ jobs:
           sudo rm -rf /opt/ghc &
           sudo rm -rf /opt/hostedtoolcache/CodeQL &
           make -j$(nproc --all) LLVM=1 ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- CC="ccache clang" LD="ld.lld" HOSTLD=ld.lld O=out KCFLAGS+=-O2 KCFLAGS+=-Wno-error gki_defconfig &&
-          if [ "${{ env.ENABLE_DROIDSPACES }}" = "true" ]; then
-            bash "$GITHUB_WORKSPACE/.github/scripts/force_container_configs.sh" || exit 1
-          fi &&
+          bash "$GITHUB_WORKSPACE/.github/scripts/force_container_configs.sh" || exit 1
           make -j$(nproc --all) LLVM=1 ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- CC="$(pwd)/cc-wrapper" LD="$(pwd)/ld-wrapper" HOSTLD=ld.lld O=out KCFLAGS+=-O2 KCFLAGS+=-Wno-error Image
           LD_PRELOAD=$PRELOAD_LIBS stat ./Makefile
           echo "ccache 状态："
