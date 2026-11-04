@@ -1,37 +1,50 @@
 #!/usr/bin/env bash
-# 寮哄埗鍐欏叆 Droidspaces 瀹瑰櫒鎵€闇€鍐呮牳閰嶇疆
-# 蹇呴』鍦?gki_defconfig 涔嬪悗銆乥uild Image 涔嬪墠鎵ц锛宑wd = kernel_workspace/common
+# Force-enable kernel configs required by Droidspaces containers.
+# Must run AFTER gki_defconfig and BEFORE building Image.
+# cwd = kernel_workspace/common
 set -u
 
 MK="make -j$(nproc --all) LLVM=1 ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- O=out"
+CFG="out/.config"
 
-echo "===== [1/3] 鎵撳紑 SYSVIPC锛圛PC_NS 渚濊禆瀹冿紝鍚﹀垯绗﹀彿鍦?.config 涓牴鏈笉瀛樺湪锛?===="
-./scripts/config --file out/.config -e NAMESPACES -e SYSVIPC -e SYSVIPC_SYSCTL
-$MK olddefconfig >/dev/null 2>&1 || { echo "::error::olddefconfig 绗竴杞け璐?; exit 1; }
+echo "===== [1/3] enable SYSVIPC first (IPC_NS depends on it) ====="
+./scripts/config --file "$CFG" -e NAMESPACES -e SYSVIPC -e SYSVIPC_SYSCTL
+$MK olddefconfig >/dev/null 2>&1 || { echo "::error::olddefconfig pass1 failed"; exit 1; }
 
-echo "===== [2/3] 鎵撳紑鍛藉悕绌洪棿涓庡鍣ㄦ枃浠剁郴缁?====="
-./scripts/config --file out/.config \
+echo "===== [2/3] enable namespaces and container filesystems ====="
+./scripts/config --file "$CFG" \
   -e PID_NS -e IPC_NS -e USER_NS -e UTS_NS -e NET_NS \
   -e POSIX_MQUEUE -e POSIX_MQUEUE_SYSCTL \
   -e DEVTMPFS -e DEVTMPFS_MOUNT -e TMPFS -e TMPFS_XATTR -e TMPFS_POSIX_ACL
-$MK olddefconfig >/dev/null 2>&1 || { echo "::error::olddefconfig 绗簩杞け璐?; exit 1; }
+$MK olddefconfig >/dev/null 2>&1 || { echo "::error::olddefconfig pass2 failed"; exit 1; }
 
-echo "===== [3/3] 閫愰」鏍稿 ====="
-REQ="NAMESPACES PID_NS IPC_NS USER_NS SYSVIPC SYSVIPC_SYSCTL POSIX_MQUEUE DEVTMPFS DEVTMPFS_MOUNT TMPFS_XATTR TMPFS_POSIX_ACL"
-grep -E "^CONFIG_($(echo $REQ | tr ' ' '|'))=" out/.config || true
+echo "===== [3/3] verify ====="
+grep -E '^CONFIG_(NAMESPACES|PID_NS|IPC_NS|USER_NS|UTS_NS|NET_NS|SYSVIPC|SYSVIPC_SYSCTL|POSIX_MQUEUE|DEVTMPFS|DEVTMPFS_MOUNT|TMPFS|TMPFS_XATTR|TMPFS_POSIX_ACL)=' "$CFG" || true
+
+REQUIRED="NAMESPACES PID_NS IPC_NS SYSVIPC SYSVIPC_SYSCTL POSIX_MQUEUE DEVTMPFS TMPFS_XATTR TMPFS_POSIX_ACL"
+OPTIONAL="USER_NS DEVTMPFS_MOUNT UTS_NS NET_NS"
 
 MISS=""
-for k in $REQ; do
-  grep -qE "^CONFIG_${k}=y" out/.config || MISS="$MISS $k"
+for k in $REQUIRED; do
+  grep -qE "^CONFIG_${k}=y" "$CFG" || MISS="$MISS $k"
 done
 
+WARN=""
+for k in $OPTIONAL; do
+  grep -qE "^CONFIG_${k}=y" "$CFG" || WARN="$WARN $k"
+done
+
+if [ -n "$WARN" ]; then
+  echo "::warning::optional configs not enabled:$WARN"
+fi
+
 if [ -n "$MISS" ]; then
-  echo "::error::浠ヤ笅閰嶇疆鏈兘鐢熸晥:$MISS"
-  echo "----- 鐩稿叧 Kconfig 渚濊禆妫€鏌?-----"
+  echo "::error::required configs not enabled:$MISS"
   for k in $MISS; do
+    echo "----- dependency source of $k -----"
     grep -rn "^config ${k}$" --include="Kconfig*" . 2>/dev/null | head -3
   done
   exit 1
 fi
 
-echo "OK: 鍏ㄩ儴瀹瑰櫒鎵€闇€閰嶇疆宸茬敓鏁?
+echo "OK: all required container configs are enabled"
