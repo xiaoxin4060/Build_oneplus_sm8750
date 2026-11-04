@@ -730,10 +730,11 @@ jobs:
           sudo rm -rf /opt/ghc &
           sudo rm -rf /opt/hostedtoolcache/CodeQL &
           make -j$(nproc --all) LLVM=1 ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- CC="ccache clang" LD="ld.lld" HOSTLD=ld.lld O=out KCFLAGS+=-O2 KCFLAGS+=-Wno-error gki_defconfig &&
-          patch -p1 --forward < "$GITHUB_WORKSPACE/patch/sched_kabi_fix.patch" 2>&1 | tee /tmp/patch_out.txt
+          echo "aW1wb3J0IHN5cwpwID0gJ2luY2x1ZGUvbGludXgvc2NoZWQuaCcKcyA9IG9wZW4ocCwgZW5jb2Rpbmc9J3V0Zi04JykucmVhZCgpCmJsayA9ICcjaWZkZWYgQ09ORklHX1NZU1ZJUENcblx0c3RydWN0IHN5c3Zfc2VtXHRcdFx0c3lzdnNlbTtcblx0c3RydWN0IHN5c3Zfc2htXHRcdFx0c3lzdnNobTtcbiNlbmRpZlxuJwphc3NlcnQgcy5jb3VudChibGspID09IDEsICdzeXN2IGJsb2NrIGNvdW50PSVkJyAlIHMuY291bnQoYmxrKQpzID0gcy5yZXBsYWNlKGJsaywgJycpCmkgPSBzLmluZGV4KCdzdHJ1Y3QgdGFza19zdHJ1Y3QgeycpCnNlcSA9ICdcdEFORFJPSURfS0FCSV9SRVNFUlZFKDYpO1xuXHRBTkRST0lEX0tBQklfUkVTRVJWRSg3KTtcblx0QU5EUk9JRF9LQUJJX1JFU0VSVkUoOCk7XG4nCmogPSBzLmluZGV4KHNlcSwgaSkKbmV3ID0gKCdcdCNpZmRlZiBDT05GSUdfU1lTVklQQ1xuJwogICAgICAgJ1x0QU5EUk9JRF9LQUJJX1VTRSg2LCBzdHJ1Y3Qgc3lzdl9zZW0gc3lzdnNlbSk7XG4nCiAgICAgICAnXHRfQU5EUk9JRF9LQUJJX1JFUExBQ0UoQU5EUk9JRF9LQUJJX1JFU0VSVkUoNyk7IEFORFJPSURfS0FCSV9SRVNFUlZFKDgpLCBzdHJ1Y3Qgc3lzdl9zaG0gc3lzdnNobSk7XG4nCiAgICAgICAnXHQjZWxzZVxuJyArIHNlcSArICdcdCNlbmRpZlxuJykKcyA9IHNbOmpdICsgbmV3ICsgc1tqK2xlbihzZXEpOl0Kb3BlbihwLCAndycsIGVuY29kaW5nPSd1dGYtOCcpLndyaXRlKHMpCnByaW50KCdzY2hlZC5oIE9LOiBzeXN2IGZpZWxkcyBtb3ZlZCBpbnRvIEtBQkkgc2xvdHMgNi83LzgnKQo=" | base64 -d > /tmp/fix_sched.py
+          python3 /tmp/fix_sched.py 2>&1 | tee /tmp/patch_out.txt
           PATCH_RC=${PIPESTATUS[0]}
           echo "PATCH_RC=$PATCH_RC"
-          grep -n "sysvsem\|sysvshm\|ANDROID_KABI_USE(1" include/linux/sched.h > /tmp/sched_check.txt || true
+          grep -n "sysvsem\|sysvshm\|ANDROID_KABI_RESERVE" include/linux/sched.h > /tmp/sched_check.txt || true
           bash "$GITHUB_WORKSPACE/.github/scripts/force_container_configs.sh" 2>&1 | tee /tmp/cfg_out.txt
           CFG_RC=${PIPESTATUS[0]}
           echo "CFG_RC=$CFG_RC"
