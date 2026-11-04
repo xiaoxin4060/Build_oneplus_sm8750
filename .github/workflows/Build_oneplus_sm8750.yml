@@ -426,7 +426,8 @@ jobs:
               echo "❌ 未匹配到补丁，风驰补丁暂未支持该机型"
               exit 11
             fi
-          else
+          fi
+          if [ -z "$SCHED_FILE" ]; then
             echo "未启用风驰，则需应用OGKI转换GKI补丁"
             cd kernel_workspace/common
             sed -i '1iobj-y += hmbird_patch.o' drivers/Makefile
