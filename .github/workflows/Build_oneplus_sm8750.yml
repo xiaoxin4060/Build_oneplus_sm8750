@@ -723,6 +723,21 @@ jobs:
           sudo rm -rf /opt/ghc &
           sudo rm -rf /opt/hostedtoolcache/CodeQL &
           make -j$(nproc --all) LLVM=1 ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- CC="ccache clang" LD="ld.lld" HOSTLD=ld.lld O=out KCFLAGS+=-O2 KCFLAGS+=-Wno-error gki_defconfig &&
+          if [ "${{ env.ENABLE_DROIDSPACES }}" = "true" ]; then
+            echo "===== 强制写入容器所需配置 (scripts/config) ====="
+            ./scripts/config --file out/.config \
+              -e PID_NS -e IPC_NS -e SYSVIPC -e SYSVIPC_SYSCTL \
+              -e POSIX_MQUEUE -e DEVTMPFS -e TMPFS_XATTR -e TMPFS_POSIX_ACL -e USER_NS
+            make -j$(nproc --all) LLVM=1 ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- O=out olddefconfig
+            echo "===== 写入后核对 ====="
+            grep -E "CONFIG_(PID_NS|IPC_NS|SYSVIPC|DEVTMPFS|POSIX_MQUEUE)" out/.config || true
+            if grep -qE "^CONFIG_(PID_NS|IPC_NS|SYSVIPC)=y" out/.config; then
+              echo "OK: 命名空间配置已生效"
+            else
+              echo "::error::配置未能生效，构建中止"
+              exit 1
+            fi
+          fi &&
           make -j$(nproc --all) LLVM=1 ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- CC="$(pwd)/cc-wrapper" LD="$(pwd)/ld-wrapper" HOSTLD=ld.lld O=out KCFLAGS+=-O2 KCFLAGS+=-Wno-error Image
           LD_PRELOAD=$PRELOAD_LIBS stat ./Makefile
           echo "ccache 状态："
@@ -750,6 +765,9 @@ jobs:
           echo "===== 镜像 ====="
           ls -l "$O/arch/arm64/boot/Image" 2>/dev/null || echo "(无 Image)"
           sha256sum "$O/arch/arm64/boot/Image" 2>/dev/null || true
+          echo "===== KMI 符号是否存在于源码 Kconfig ====="
+          grep -rln "GKI_DYNAMIC_TASK_STRUCT_SIZE" --include="Kconfig*" kernel_workspace/common 2>/dev/null | head -3 || echo "(源码中未定义)"
+          grep -rln "ARCH_WANTS_DYNAMIC_TASK_STRUCT" --include="Kconfig*" kernel_workspace/common 2>/dev/null | head -3 || echo "(源码中未定义)"
 
       - name: 📤 Upload raw Image (上传原始镜像供本地体检)
         if: always()
