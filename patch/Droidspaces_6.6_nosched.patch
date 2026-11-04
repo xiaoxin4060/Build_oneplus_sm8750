@@ -107,11 +107,13 @@ index c85c8c25a8485..2e6630a80794d 100644
  #if IS_ENABLED(CONFIG_NF_FLOW_TABLE)
  	struct netns_ft ft;
  #endif
-@@ -160,6 +164,7 @@ struct net {
+@@ -160,6 +164,8 @@ struct net {
  
  	/* Used to store attached BPF programs */
  	struct netns_bpf	bpf;
++#if defined(CONFIG_NF_TABLES) || defined(CONFIG_NF_TABLES_MODULE)
 +	struct net_ext		*ext;
++#endif
  
  	/* Note : following structs are cache line aligned */
  #ifdef CONFIG_XFRM
