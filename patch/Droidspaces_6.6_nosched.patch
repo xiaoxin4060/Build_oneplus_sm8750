@@ -107,7 +107,7 @@ index c85c8c25a8485..2e6630a80794d 100644
  #if IS_ENABLED(CONFIG_NF_FLOW_TABLE)
  	struct netns_ft ft;
  #endif
-@@ -160,6 +164,8 @@ struct net {
+@@ -160,6 +164,9 @@ struct net {
  
  	/* Used to store attached BPF programs */
  	struct netns_bpf	bpf;
