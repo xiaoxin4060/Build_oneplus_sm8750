@@ -674,38 +674,6 @@ jobs:
           fi
 
 
-      - name: 🧩 Align task_struct vendor area with stock ROM (对齐 task_struct vendor 数据区)
-        run: |
-          echo "================================================================"
-          echo "ROM 内核 task_struct 布局（BTF 实测 PMA120_17.0.0.106）:"
-          echo "  sizeof(task_struct)  = 4800"
-          echo "  android_vendor_data1 =  512  (@3008)"
-          echo "  android_oem_data1    =   @3520"
-          echo "  thread               =   @3648"
-          echo "OSS 源码默认:"
-          echo "  android_vendor_data1 =   64  -> 后续成员整体平移 -448 字节"
-          echo "厂商模块按 ROM 布局读写，越界即覆盖 thread(CPU 上下文)，"
-          echo "开机必无限重启。此处必须在所有补丁之后、编译之前对齐。"
-          echo "================================================================"
-          F="kernel_workspace/common/include/linux/sched.h"
-          if [ ! -f "$F" ]; then
-            echo "::error::找不到 $F"
-            exit 1
-          fi
-          echo "--- 修正前 ---"
-          grep -n "ANDROID_VENDOR_DATA_ARRAY" "$F" || true
-          sed -i 's/ANDROID_VENDOR_DATA_ARRAY(1, *64)/ANDROID_VENDOR_DATA_ARRAY(1, 512)/' "$F"
-          echo "--- 修正后 ---"
-          if grep -q "ANDROID_VENDOR_DATA_ARRAY(1, 512)" "$F"; then
-            grep -n "ANDROID_VENDOR_DATA_ARRAY" "$F"
-            echo "[OK] task_struct vendor 数据区已对齐为 512 字节"
-            echo "--- 附近上下文 ---"
-            grep -n -B1 -A2 "ANDROID_VENDOR_DATA_ARRAY(1, 512)" "$F"
-          else
-            echo "::error::未能修改 ANDROID_VENDOR_DATA_ARRAY，源码结构与预期不符，终止构建"
-            exit 1
-          fi
-
       - name: 🔨 Build Kernel (构建内核)
         run: |
           WORKDIR="$(pwd)"
