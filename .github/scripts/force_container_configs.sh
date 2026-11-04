@@ -7,27 +7,38 @@ set -u
 MK="make -j$(nproc --all) LLVM=1 ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- O=out"
 CFG="out/.config"
 
-echo "===== [1/3] enable SYSVIPC first (IPC_NS depends on it) ====="
+echo "===== [1/4] enable SYSVIPC first (IPC_NS depends on it) ====="
 ./scripts/config --file "$CFG" -e NAMESPACES -e SYSVIPC -e SYSVIPC_SYSCTL
 $MK olddefconfig >/dev/null 2>&1 || { echo "::error::olddefconfig pass1 failed"; exit 1; }
 
-echo "===== [2/3] enable namespaces and container filesystems ====="
+echo "===== [2/4] enable namespaces and container filesystems ====="
 ./scripts/config --file "$CFG" \
   -e PID_NS -e IPC_NS -e USER_NS -e UTS_NS -e NET_NS \
   -e POSIX_MQUEUE -e POSIX_MQUEUE_SYSCTL \
   -e DEVTMPFS -e DEVTMPFS_MOUNT -e TMPFS -e TMPFS_XATTR -e TMPFS_POSIX_ACL
+
+echo "===== [3/4] restore OPlus dynamic task_struct (KMI, fixes stuck lockscreen) ====="
+echo "----- Kconfig source of GKI_DYNAMIC_TASK_STRUCT_SIZE -----"
+grep -rn -A14 "^config GKI_DYNAMIC_TASK_STRUCT_SIZE" --include="Kconfig*" . 2>/dev/null | head -20 || true
+./scripts/config --file "$CFG" -e GKI_DYNAMIC_TASK_STRUCT_SIZE
+./scripts/config --file "$CFG" --set-val GKI_TASK_STRUCT_VENDOR_SIZE_MAX 1024
 $MK olddefconfig >/dev/null 2>&1 || { echo "::error::olddefconfig pass2 failed"; exit 1; }
 
-echo "===== [3/3] verify ====="
-grep -E '^CONFIG_(NAMESPACES|PID_NS|IPC_NS|USER_NS|UTS_NS|NET_NS|SYSVIPC|SYSVIPC_SYSCTL|POSIX_MQUEUE|DEVTMPFS|DEVTMPFS_MOUNT|TMPFS|TMPFS_XATTR|TMPFS_POSIX_ACL)=' "$CFG" || true
+echo "===== [4/4] verify ====="
+grep -E '^CONFIG_(NAMESPACES|PID_NS|IPC_NS|USER_NS|UTS_NS|NET_NS|SYSVIPC|SYSVIPC_SYSCTL|POSIX_MQUEUE|DEVTMPFS|DEVTMPFS_MOUNT|TMPFS|TMPFS_XATTR|TMPFS_POSIX_ACL|GKI_DYNAMIC_TASK_STRUCT_SIZE|GKI_TASK_STRUCT_VENDOR_SIZE_MAX|MODULE_SCMVERSION)=' "$CFG" || true
 
-REQUIRED="NAMESPACES PID_NS IPC_NS SYSVIPC SYSVIPC_SYSCTL POSIX_MQUEUE DEVTMPFS TMPFS_XATTR TMPFS_POSIX_ACL"
+REQUIRED="NAMESPACES PID_NS IPC_NS SYSVIPC SYSVIPC_SYSCTL POSIX_MQUEUE DEVTMPFS TMPFS_XATTR TMPFS_POSIX_ACL GKI_DYNAMIC_TASK_STRUCT_SIZE"
 OPTIONAL="USER_NS DEVTMPFS_MOUNT UTS_NS NET_NS"
 
 MISS=""
 for k in $REQUIRED; do
   grep -qE "^CONFIG_${k}=y" "$CFG" || MISS="$MISS $k"
 done
+
+# int type must be exactly 1024, otherwise vendor extension space is wrong
+if ! grep -qE "^CONFIG_GKI_TASK_STRUCT_VENDOR_SIZE_MAX=1024$" "$CFG"; then
+  MISS="$MISS GKI_TASK_STRUCT_VENDOR_SIZE_MAX(=1024)"
+fi
 
 WARN=""
 for k in $OPTIONAL; do
