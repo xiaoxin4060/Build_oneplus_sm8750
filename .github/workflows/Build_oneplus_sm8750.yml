@@ -6,13 +6,13 @@ on:
   workflow_dispatch:
     inputs:
       enable_release:
-        description: "发布到 Releases"
+        description: "鍙戝竷鍒?Releases"
         required: true
         default: true
         type: boolean
 
       device_name:
-        description: "📝请选择要编译的机型："
+        description: "馃摑璇烽€夋嫨瑕佺紪璇戠殑鏈哄瀷锛?
         required: true
         type: choice
         options:
@@ -30,47 +30,47 @@ on:
         default: 'oneplus_ace5_pro'
 
       custom_kernel_suffix:
-        description: "✏️ 自定义内核名称- (-开头 留空则默认官方）"
+        description: "鉁忥笍 鑷畾涔夊唴鏍稿悕绉? (-寮€澶?鐣欑┖鍒欓粯璁ゅ畼鏂癸級"
         required: false
         default: ''
       
       custom_kernel_time:
-        description: "⏰ 自定义构建时间- (英文时间字符串格式 留空则默认官方）"
+        description: "鈴?鑷畾涔夋瀯寤烘椂闂? (鑻辨枃鏃堕棿瀛楃涓叉牸寮?鐣欑┖鍒欓粯璁ゅ畼鏂癸級"
         required: false
         default: ''
 
       enable_susfs:
-        description: "启用SUSFS"
+        description: "鍚敤SUSFS"
         required: true
         default: true
         type: boolean
       
       enable_droidspaces:
-        description: "添加 Droidspaces 容器支持"
+        description: "娣诲姞 Droidspaces 瀹瑰櫒鏀寔"
         required: true
         default: false
         type: boolean
         
       enable_ReKernel:
-        description: "添加Re-Kernel支持"
+        description: "娣诲姞Re-Kernel鏀寔"
         required: true
         default: false
         type: boolean
 
       enable_Adios:
-        description: "添加ADIOS IO调度器支持"
+        description: "娣诲姞ADIOS IO璋冨害鍣ㄦ敮鎸?
         required: true
         default: true
         type: boolean
       
       enable_scx:
-        description: "添加完美风驰"
+        description: "娣诲姞瀹岀編椋庨┌"
         required: true
         default: true
         type: boolean
 
       enable_bbg:
-        description: "添加BBG基带守护"
+        description: "娣诲姞BBG鍩哄甫瀹堟姢"
         required: true
         default: true
         type: boolean
@@ -97,7 +97,7 @@ jobs:
       - uses: actions/checkout@v5
         with:
           fetch-depth: 0
-      - name: ⚙️ Set REPO_MANIFEST (设置对应机型配置文件)
+      - name: 鈿欙笍 Set REPO_MANIFEST (璁剧疆瀵瑰簲鏈哄瀷閰嶇疆鏂囦欢)
         run: |
           case "${{ env.DEVICES_NAME }}" in
             oneplus_ace5_pro)
@@ -161,14 +161,13 @@ jobs:
               ;;
           esac
             echo "DEFAULT_SUFFIX=$DEFAULT_SUFFIX" >> $GITHUB_ENV
-            echo "使用原官核名称：$DEFAULT_SUFFIX"
+            echo "浣跨敤鍘熷畼鏍稿悕绉帮細$DEFAULT_SUFFIX"
           else
-              # 验证用户输入是否以 - 开头
-              if [[ "${{ github.event.inputs.custom_kernel_suffix }}" != -* ]]; then
-                echo "::warning::自定义内核名称请以 - 开头"
-                echo "示例：-android15-8-g096cdb6ecefc-ab14358676-4k"
+              # 楠岃瘉鐢ㄦ埛杈撳叆鏄惁浠?- 寮€澶?              if [[ "${{ github.event.inputs.custom_kernel_suffix }}" != -* ]]; then
+                echo "::warning::鑷畾涔夊唴鏍稿悕绉拌浠?- 寮€澶?
+                echo "绀轰緥锛?android15-8-g096cdb6ecefc-ab14358676-4k"
               fi
-            echo "使用自定义名称: ${{ github.event.inputs.custom_kernel_suffix }}"
+            echo "浣跨敤鑷畾涔夊悕绉? ${{ github.event.inputs.custom_kernel_suffix }}"
             echo "DEFAULT_SUFFIX=${{ github.event.inputs.custom_kernel_suffix }}" >> $GITHUB_ENV
           fi
           if [ -z "${{ github.event.inputs.custom_kernel_time }}" ]; then
@@ -187,13 +186,13 @@ jobs:
                 ;;
             esac
             echo "KERNEL_TIME=$KERNEL_TIME" >> $GITHUB_ENV
-            echo "使用官核时间：$KERNEL_TIME"
+            echo "浣跨敤瀹樻牳鏃堕棿锛?KERNEL_TIME"
           else
-            echo "使用自定义构建时间: ${{ github.event.inputs.custom_kernel_time }}"
+            echo "浣跨敤鑷畾涔夋瀯寤烘椂闂? ${{ github.event.inputs.custom_kernel_time }}"
             echo "KERNEL_TIME=${{ github.event.inputs.custom_kernel_time }}" >> $GITHUB_ENV
           fi
 
-      - name: 🛠 Install dependencies and Initialize repo and sync （安装环境依赖+初始化源码仓库及工具链）
+      - name: 馃洜 Install dependencies and Initialize repo and sync 锛堝畨瑁呯幆澧冧緷璧?鍒濆鍖栨簮鐮佷粨搴撳強宸ュ叿閾撅級
         run: |
           rm -rf kernel_workspace
           mkdir kernel_workspace
@@ -208,7 +207,7 @@ jobs:
           sudo cp -f ./ccache /usr/bin/ccache &&
           sudo chmod +x /usr/bin/ccache &&
           rm -f ./ccache &
-          echo "正在克隆源码仓库..."
+          echo "姝ｅ湪鍏嬮殕婧愮爜浠撳簱..."
           if [ "${DEVICES_NAME}" = "realme_GT7pro" ] || [ "${DEVICES_NAME}" = "realme_GT7pro_Speed" ] || [ "${DEVICES_NAME}" = "realme_GT8" ]; then
             aria2c -s16 -x16 -k1M https://github.com/realme-kernel-opensource/realme_GT8-AndroidB-common-source/archive/refs/heads/master.zip -o common.zip
             unzip -q common.zip && 
@@ -223,39 +222,38 @@ jobs:
             mv "android_kernel_common_oneplus_sm8750-oneplus-${REPO_MANIFEST}" common
           fi
           rm -rf common.zip 
-          echo "正在克隆 llvm-clang18 工具链..."
+          echo "姝ｅ湪鍏嬮殕 llvm-clang18 宸ュ叿閾?.."
           mkdir -p clang18 &&
           aria2c -s16 -x16 -k1M https://github.com/cctv18/oneplus_sm8650_toolchain/releases/download/LLVM-Clang18-r510928/clang-r510928.zip -o clang.zip &&
           unzip -q clang.zip -d clang18 &&
           rm -rf clang.zip &
-          echo "正在克隆构建工具..." &&
+          echo "姝ｅ湪鍏嬮殕鏋勫缓宸ュ叿..." &&
           aria2c -s16 -x16 -k1M https://github.com/cctv18/oneplus_sm8650_toolchain/releases/download/LLVM-Clang18-r510928/build-tools.zip -o build-tools.zip &&
           unzip -q build-tools.zip &&
           rm -rf build-tools.zip &
           wait
-          echo "所有源码及 llvm-Clang18 工具链初始化完成！"
-          echo "正在去除 ABI 保护 & 去除 dirty 后缀..."
+          echo "鎵€鏈夋簮鐮佸強 llvm-Clang18 宸ュ叿閾惧垵濮嬪寲瀹屾垚锛?
+          echo "姝ｅ湪鍘婚櫎 ABI 淇濇姢 & 鍘婚櫎 dirty 鍚庣紑..."
           rm common/android/abi_gki_protected_exports_* || true
           for f in common/scripts/setlocalversion; do
             sed -i 's/ -dirty//g' "$f"
             sed -i '$i res=$(echo "$res" | sed '\''s/-dirty//g'\'')' "$f"
           done
           
-      - name: 🛠 Set ccache DIR(配置 ccache 目录)
+      - name: 馃洜 Set ccache DIR(閰嶇疆 ccache 鐩綍)
         run: |
           echo "CCACHE_DIR=$HOME/.ccache_${{ env.DEVICES_NAME }}" >> $GITHUB_ENV
           echo "CCACHE_MAXSIZE=10G" >> $GITHUB_ENV
-          # 根据影响源码的功能开关生成缓存变体后缀，避免不同变体互相污染
-          CACHE_VARIANT=""
+          # 鏍规嵁褰卞搷婧愮爜鐨勫姛鑳藉紑鍏崇敓鎴愮紦瀛樺彉浣撳悗缂€锛岄伩鍏嶄笉鍚屽彉浣撲簰鐩告薄鏌?          CACHE_VARIANT=""
           if [ "${{ env.ENABLE_DROIDSPACES }}" = "true" ]; then
             CACHE_VARIANT="${CACHE_VARIANT}-ds"
           fi
           echo "CACHE_VARIANT=$CACHE_VARIANT" >> $GITHUB_ENV
-          echo "当前构建内核机型：${{ env.DEVICES_NAME }}，缓存变体：${CACHE_VARIANT:-(无)}"
-          echo "当前磁盘空间："
+          echo "褰撳墠鏋勫缓鍐呮牳鏈哄瀷锛?{{ env.DEVICES_NAME }}锛岀紦瀛樺彉浣擄細${CACHE_VARIANT:-(鏃?}"
+          echo "褰撳墠纾佺洏绌洪棿锛?
           df -h
 
-      - name: 📥 Restore ccache (载入当前机型的 ccache 缓存)
+      - name: 馃摜 Restore ccache (杞藉叆褰撳墠鏈哄瀷鐨?ccache 缂撳瓨)
         id: ccache-restore
         uses: actions/cache/restore@v5
         with:
@@ -265,7 +263,7 @@ jobs:
             ccache-${{ env.DEVICES_NAME }}${{ env.CACHE_VARIANT }}-
             ccache-${{ env.DEVICES_NAME }}-
 
-      - name: 🔎 Find public ccache in releases (查找公共缓存)
+      - name: 馃攷 Find public ccache in releases (鏌ユ壘鍏叡缂撳瓨)
         id: public-ccache
         if: ${{ steps.ccache-restore.outputs.cache-matched-key == '' }}
         uses: actions/github-script@v8
@@ -284,18 +282,18 @@ jobs:
             let selected = null;
 
             const escape_regex = (value) => value.replace(/[.*+?^${}()|[\\]\\]/g, '\\$&');
-            // 优先精确匹配带变体的资产，其次匹配不带变体的
+            // 浼樺厛绮剧‘鍖归厤甯﹀彉浣撶殑璧勪骇锛屽叾娆″尮閰嶄笉甯﹀彉浣撶殑
             const variantExactName = `ccache-${deviceName}${cacheVariant}.tar.zst`;
             const plainExactName = `ccache-${deviceName}.tar.zst`;
-            // 有变体时仅匹配变体缓存，不降级到非变体（不同变体的缓存无法互相命中）
+            // 鏈夊彉浣撴椂浠呭尮閰嶅彉浣撶紦瀛橈紝涓嶉檷绾у埌闈炲彉浣擄紙涓嶅悓鍙樹綋鐨勭紦瀛樻棤娉曚簰鐩稿懡涓級
             const priorityAssets = cacheVariant ? [variantExactName] : [plainExactName];
             const legacyAssetPattern = new RegExp(`^ccache-(.+-)?${escape_regex(deviceName)}(-[0-9]+)?\\.tar\\.zst$`);
 
-            core.info(`当前仓库无匹配 ccache，开始按机型查找公共缓存：${deviceName}`);
-            core.info(`缓存变体：${cacheVariant || '(无)'}`);
-            core.info(`缓存来源仓库：${owner}/${repo}`);
-            core.info(`缓存来源标签：${releaseTag}`);
-            core.info(`优先匹配公共缓存文件：${priorityAssets.join(', ')}`);
+            core.info(`褰撳墠浠撳簱鏃犲尮閰?ccache锛屽紑濮嬫寜鏈哄瀷鏌ユ壘鍏叡缂撳瓨锛?{deviceName}`);
+            core.info(`缂撳瓨鍙樹綋锛?{cacheVariant || '(鏃?'}`);
+            core.info(`缂撳瓨鏉ユ簮浠撳簱锛?{owner}/${repo}`);
+            core.info(`缂撳瓨鏉ユ簮鏍囩锛?{releaseTag}`);
+            core.info(`浼樺厛鍖归厤鍏叡缂撳瓨鏂囦欢锛?{priorityAssets.join(', ')}`);
 
             let release;
             try {
@@ -306,7 +304,7 @@ jobs:
               });
               release = response.data;
             } catch (error) {
-              core.info(`未找到公共缓存 release: ${releaseTag}`);
+              core.info(`鏈壘鍒板叕鍏辩紦瀛?release: ${releaseTag}`);
               return;
             }
 
@@ -315,7 +313,7 @@ jobs:
               const isExactMatch = priorityIndex !== -1;
               const isLegacyMatch = legacyAssetPattern.test(asset.name);
               if (isExactMatch || isLegacyMatch) {
-                // 带变体的精确匹配优先级最高（priorityIndex=0），其次不带变体（priorityIndex=1），最后是 legacy
+                // 甯﹀彉浣撶殑绮剧‘鍖归厤浼樺厛绾ф渶楂橈紙priorityIndex=0锛夛紝鍏舵涓嶅甫鍙樹綋锛坧riorityIndex=1锛夛紝鏈€鍚庢槸 legacy
                 const shouldReplace =
                   !selected ||
                   (isExactMatch && (!selected.exact || priorityIndex < (selected.priority ?? 99))) ||
@@ -336,16 +334,16 @@ jobs:
             }
 
             if (!selected) {
-              core.info('未找到可用的公共 ccache 资产，将使用空缓存继续构建');
+              core.info('鏈壘鍒板彲鐢ㄧ殑鍏叡 ccache 璧勪骇锛屽皢浣跨敤绌虹紦瀛樼户缁瀯寤?);
               return;
             }
 
-            core.info(`找到公共缓存：${selected.name} (${selected.repo}@${selected.tag})`);
+            core.info(`鎵惧埌鍏叡缂撳瓨锛?{selected.name} (${selected.repo}@${selected.tag})`);
             core.setOutput('asset-name', selected.name);
             core.setOutput('release-tag', selected.tag);
             core.setOutput('source-repo', selected.repo);
 
-      - name: 📦 Restore public ccache from releases (恢复公共缓存)
+      - name: 馃摝 Restore public ccache from releases (鎭㈠鍏叡缂撳瓨)
         if: ${{ steps.ccache-restore.outputs.cache-matched-key == '' && steps.public-ccache.outputs.asset-name != '' }}
         env:
           GH_TOKEN: ${{ github.token }}
@@ -354,7 +352,7 @@ jobs:
           PUBLIC_CACHE_ASSET: ${{ steps.public-ccache.outputs.asset-name }}
         run: |
           set -euo pipefail
-          echo "当前仓库无匹配缓存，开始下载公共缓存：$PUBLIC_CACHE_ASSET"
+          echo "褰撳墠浠撳簱鏃犲尮閰嶇紦瀛橈紝寮€濮嬩笅杞藉叕鍏辩紦瀛橈細$PUBLIC_CACHE_ASSET"
           rm -f "$PUBLIC_CACHE_ASSET"
           rm -rf "$CCACHE_DIR"
           gh release download "$PUBLIC_CACHE_TAG" --repo "$PUBLIC_CACHE_REPO" --pattern "$PUBLIC_CACHE_ASSET" --dir .
@@ -362,7 +360,7 @@ jobs:
           tar --use-compress-program=unzstd -xf "$PUBLIC_CACHE_ASSET" -C "$TEMP_EXTRACT_DIR"
           EXTRACTED_CCACHE_DIR="$(find "$TEMP_EXTRACT_DIR" -maxdepth 1 -mindepth 1 -type d -name '.ccache_*' | head -n 1)"
           if [ -z "$EXTRACTED_CCACHE_DIR" ]; then
-            echo "::error::公共缓存解压后未找到 .ccache_* 目录"
+            echo "::error::鍏叡缂撳瓨瑙ｅ帇鍚庢湭鎵惧埌 .ccache_* 鐩綍"
             exit 1
           fi
 
@@ -374,9 +372,9 @@ jobs:
           test -d "$CCACHE_DIR"
           ls -lah "$CCACHE_DIR" | head -n 20
           echo "PUBLIC_CCACHE_USED=true" >> "$GITHUB_ENV"
-          echo "公共缓存恢复完成：$CCACHE_DIR"
+          echo "鍏叡缂撳瓨鎭㈠瀹屾垚锛?CCACHE_DIR"
       
-      - name: 📥 Init ccache (初始化配置 ccache)
+      - name: 馃摜 Init ccache (鍒濆鍖栭厤缃?ccache)
         run: |
           export CCACHE_COMPILERCHECK="none"
           export CCACHE_BASEDIR="${{ github.workspace }}"
@@ -387,27 +385,27 @@ jobs:
           
           mkdir -p "$CCACHE_DIR"
           
-          echo "配置 ccache 缓存大小为：$CCACHE_MAXSIZE"
+          echo "閰嶇疆 ccache 缂撳瓨澶у皬涓猴細$CCACHE_MAXSIZE"
           ccache -M "$CCACHE_MAXSIZE"
           ccache -o compression=true
           
-          echo "ccache 初始状态:"
+          echo "ccache 鍒濆鐘舵€?"
           ccache -s
           
           if [ -n "${{ steps.ccache-restore.outputs.cache-matched-key }}" ]; then
-            echo "ccache 缓存命中详情：${{ steps.ccache-restore.outputs.cache-matched-key }}"
+            echo "ccache 缂撳瓨鍛戒腑璇︽儏锛?{{ steps.ccache-restore.outputs.cache-matched-key }}"
             ccache -sv
           elif [ "${PUBLIC_CCACHE_USED:-false}" = 'true' ]; then
-            echo "已恢复公共 ccache，当前缓存详情:"
+            echo "宸叉仮澶嶅叕鍏?ccache锛屽綋鍓嶇紦瀛樿鎯?"
             ccache -sv
           else
-            echo "未命中仓库缓存，也未找到公共缓存，将从空缓存开始构建"
+            echo "鏈懡涓粨搴撶紦瀛橈紝涔熸湭鎵惧埌鍏叡缂撳瓨锛屽皢浠庣┖缂撳瓨寮€濮嬫瀯寤?
           fi
 
-      - name: 🔧 Apply Sched Patch (应用完美风驰补丁)
+      - name: 馃敡 Apply Sched Patch (搴旂敤瀹岀編椋庨┌琛ヤ竵)
         run: |
           if [ "$SCHED_FILE" = "none" ]; then
-            echo "该机型自带风驰，跳过所有补丁应用"
+            echo "璇ユ満鍨嬭嚜甯﹂椹帮紝璺宠繃鎵€鏈夎ˉ涓佸簲鐢?
           else
             cd kernel_workspace/common
             if [ "${DEVICES_NAME}" = "oneplus_ace5_ultra" ] || [ "${DEVICES_NAME}" = "realme_GT7" ] || [ "${DEVICES_NAME}" = "oneplus_pad_2" ]; then
@@ -415,35 +413,35 @@ jobs:
             else
               git clone https://github.com/Numbersf/SCHED_PATCH.git -b "sm8750"
             fi
-            echo "正在拉取风驰补丁"
+            echo "姝ｅ湪鎷夊彇椋庨┌琛ヤ竵"
             cp ./SCHED_PATCH/fengchi_${{env.SCHED_FILE}}.patch ./
             if [[ -f "fengchi_${{env.SCHED_FILE}}.patch" ]]; then
-              echo "开始应用风驰补丁"
+              echo "寮€濮嬪簲鐢ㄩ椹拌ˉ涓?
               dos2unix "fengchi_${{env.SCHED_FILE}}.patch"
               patch -p1 -F 3 < "fengchi_${{env.SCHED_FILE}}.patch"
-              echo "完美风驰补丁应用完成"
+              echo "瀹岀編椋庨┌琛ヤ竵搴旂敤瀹屾垚"
             else
-              echo "❌ 未匹配到补丁，风驰补丁暂未支持该机型"
+              echo "鉂?鏈尮閰嶅埌琛ヤ竵锛岄椹拌ˉ涓佹殏鏈敮鎸佽鏈哄瀷"
               exit 11
             fi
           fi
           if [ -z "$SCHED_FILE" ]; then
-            echo "未启用风驰，则需应用OGKI转换GKI补丁"
+            echo "鏈惎鐢ㄩ椹帮紝鍒欓渶搴旂敤OGKI杞崲GKI琛ヤ竵"
             cd kernel_workspace/common
             sed -i '1iobj-y += hmbird_patch.o' drivers/Makefile
             cp "${GITHUB_WORKSPACE}/patch/hmbird_patch.patch" ./hmbird_patch.patch
-            echo "正在打OGKI转换GKI补丁"
+            echo "姝ｅ湪鎵揙GKI杞崲GKI琛ヤ竵"
             patch -p1 -F 3 < hmbird_patch.patch
-            echo "OGKI转换GKI_patch完成"
+            echo "OGKI杞崲GKI_patch瀹屾垚"
           fi
 
-      - name: 🔧 Add Re-Kernel Support (添加 Re-Kernel 支持)
+      - name: 馃敡 Add Re-Kernel Support (娣诲姞 Re-Kernel 鏀寔)
         if: ${{ env.ENABLE_REKERNEL == 'true' }}
         run: |
             cd kernel_workspace
             VERSION=$(awk -F'=' '/^VERSION[ \t]*=/ {gsub(/ /,"",$2); print $2}' common/Makefile)
             PATCHLEVEL=$(awk -F'=' '/^PATCHLEVEL[ \t]*=/ {gsub(/ /,"",$2); print $2}' common/Makefile)
-            echo "内核版本: ${VERSION}.${PATCHLEVEL}"
+            echo "鍐呮牳鐗堟湰: ${VERSION}.${PATCHLEVEL}"
             [ ! -d "Re-Kernel" ] && git clone --depth 1 https://github.com/Sakion-Team/Re-Kernel.git
             RE_DIR="${GITHUB_WORKSPACE}/kernel_workspace/Re-Kernel/LKM-Source"
             cd common
@@ -458,30 +456,30 @@ jobs:
               sed -i "s|^[[:space:]]*//[[:space:]]*#define[[:space:]]\+$TARGET|#define $TARGET|" drivers/rekernel/rekernel.h
               echo "CONFIG_REKERNEL=m" >> arch/arm64/configs/gki_defconfig
               echo "CONFIG_REKERNEL_NETWORK=y" >> arch/arm64/configs/gki_defconfig
-              echo "✅ Re-Kernel 配置完成"
+              echo "鉁?Re-Kernel 閰嶇疆瀹屾垚"
             else
-              echo "⚠️ 不支持的内核版本: $TARGET"
+              echo "鈿狅笍 涓嶆敮鎸佺殑鍐呮牳鐗堟湰: $TARGET"
             fi
           
-      - name: 🔧 Add adios_ioscheduler (添加 adios_ioscheduler 支持)
+      - name: 馃敡 Add adios_ioscheduler (娣诲姞 adios_ioscheduler 鏀寔)
         if: ${{ env.ENABLE_ADIOS == 'true' }}
         working-directory: kernel_workspace/common
         run: |
-          echo "开始添加 ADIOS I/O 调度器支持..."
+          echo "寮€濮嬫坊鍔?ADIOS I/O 璋冨害鍣ㄦ敮鎸?.."
           PATCH_FILE="${GITHUB_WORKSPACE}/patch/adios_ioscheduler_6.6.patch"
           if [ ! -f "$PATCH_FILE" ]; then
-            echo "::error::未找到 ADIOS I/O 调度器补丁文件"
+            echo "::error::鏈壘鍒?ADIOS I/O 璋冨害鍣ㄨˉ涓佹枃浠?
             exit 1
           fi
           if [ -f "block/adios.c" ]; then
-            echo "✓ ADIOS I/O 调度器文件已存在，跳过应用补丁"
+            echo "鉁?ADIOS I/O 璋冨害鍣ㄦ枃浠跺凡瀛樺湪锛岃烦杩囧簲鐢ㄨˉ涓?
           else
             cp "$PATCH_FILE" ./adios_ioscheduler_6.6.patch
-            echo "正在应用 ADIOS I/O 调度器补丁..."
+            echo "姝ｅ湪搴旂敤 ADIOS I/O 璋冨害鍣ㄨˉ涓?.."
             if patch -p1 --ignore-whitespace -F 3 < adios_ioscheduler_6.6.patch 2>&1 | tee /tmp/adios_patch.log; then
-              echo "✓ ADIOS I/O 调度器补丁应用成功"
+              echo "鉁?ADIOS I/O 璋冨害鍣ㄨˉ涓佸簲鐢ㄦ垚鍔?
             else
-              echo "::warning::ADIOS 补丁应用出现问题"
+              echo "::warning::ADIOS 琛ヤ竵搴旂敤鍑虹幇闂"
               if grep -q "malformed patch" /tmp/adios_patch.log; then
                 patch -p1 --force --ignore-whitespace < adios_ioscheduler_6.6.patch || true
               fi
@@ -491,13 +489,13 @@ jobs:
           if ! grep -q "CONFIG_MQ_IOSCHED_ADIOS" arch/arm64/configs/gki_defconfig; then
             echo "CONFIG_MQ_IOSCHED_ADIOS=y" >> arch/arm64/configs/gki_defconfig
             echo "CONFIG_MQ_IOSCHED_DEFAULT_ADIOS=y" >> arch/arm64/configs/gki_defconfig
-            echo "✓ 已启用 ADIOS I/O 调度器支持"
+            echo "鉁?宸插惎鐢?ADIOS I/O 璋冨害鍣ㄦ敮鎸?
           fi
-          echo "✓ ADIOS I/O 调度器支持配置完成"
+          echo "鉁?ADIOS I/O 璋冨害鍣ㄦ敮鎸侀厤缃畬鎴?
           
-      - name: 🔧 apply lz4 1.10.0 & zstd 1.5.7 patches (添加lz4 1.10.0 & zstd 1.5.7补丁)
+      - name: 馃敡 apply lz4 1.10.0 & zstd 1.5.7 patches (娣诲姞lz4 1.10.0 & zstd 1.5.7琛ヤ竵)
         run: |
-          echo "正在添加lz4 1.10.0 & zstd 1.5.7补丁…"
+          echo "姝ｅ湪娣诲姞lz4 1.10.0 & zstd 1.5.7琛ヤ竵鈥?
           cd kernel_workspace
           git clone https://github.com/cctv18/oppo_oplus_realme_sm8750.git
           cp ./oppo_oplus_realme_sm8750/zram_patch/001-lz4.patch ./common
@@ -507,21 +505,21 @@ jobs:
           git apply -p1 < 001-lz4.patch || true
           patch -p1 < 002-zstd.patch || true
           
-      - name: 🔧 Set Baseband-guard (开启 BBG 基带守护)
+      - name: 馃敡 Set Baseband-guard (寮€鍚?BBG 鍩哄甫瀹堟姢)
         if: ${{ env.ENABLE_BBG == 'true' }}
         run: |
           cd kernel_workspace/common
-          echo "正在启用 BBG 基带守护…"
+          echo "姝ｅ湪鍚敤 BBG 鍩哄甫瀹堟姢鈥?
           curl -LSs https://raw.githubusercontent.com/vc-teahouse/Baseband-guard/main/setup.sh | bash
           sed -i '/^config LSM$/,/^help$/{ /^[[:space:]]*default/ { /baseband_guard/! s/lockdown/lockdown,baseband_guard/ } }' ./security/Kconfig
 
           
-      - name: ⚙️ Set ReSukiSU (设置ReSukiSU)
+      - name: 鈿欙笍 Set ReSukiSU (璁剧疆ReSukiSU)
         if: ${{ env.ENABLE_KSU == 'true' }}
         id: ksu_step
         run: |
           cd kernel_workspace
-          echo "正在配置ReSukiSU..."
+          echo "姝ｅ湪閰嶇疆ReSukiSU..."
           curl -LSs "https://raw.githubusercontent.com/ReSukiSU/ReSukiSU/refs/heads/main/kernel/setup.sh" | bash -s main
           cd ./KernelSU 
           KSU_VERSION=$(expr $(git rev-list --count main) + 30700 2>/dev/null || echo 114514)
@@ -529,7 +527,7 @@ jobs:
           echo "ksuver=$KSU_VERSION" >> $GITHUB_OUTPUT
           
             
-      - name: 🔧 Set up SUSFS (配置 SUSFS)
+      - name: 馃敡 Set up SUSFS (閰嶇疆 SUSFS)
         if: ${{ env.ENABLE_SUSFS == 'true' && env.ENABLE_KSU == 'true' }}
         run: |
           cd kernel_workspace
@@ -541,50 +539,50 @@ jobs:
           cd ./common
           patch -p1 < 50_add_susfs_in_gki-android15-6.6.patch || true
           patch -p1 -N -F 3 < 69_hide_stuff.patch || true
-          echo "[OK] SUSFS 补丁处理流程全部完成"
+          echo "[OK] SUSFS 琛ヤ竵澶勭悊娴佺▼鍏ㄩ儴瀹屾垚"
           
-      - name: 🔧 Add Droidspaces Support (添加 Droidspaces 支持)
+      - name: 馃敡 Add Droidspaces Support (娣诲姞 Droidspaces 鏀寔)
         if: ${{ env.ENABLE_DROIDSPACES == 'true' }}
         working-directory: kernel_workspace/common
         run: |
-          echo "==> 开始添加 Droidspaces 支持"
+          echo "==> 寮€濮嬫坊鍔?Droidspaces 鏀寔"
           patch_file="Droidspaces_6.6.patch"
           patch_path="${GITHUB_WORKSPACE}/patch/${patch_file}"
           
           if [ ! -f "$patch_path" ]; then
-            echo "::error::Patch 不存在: $patch_path"
+            echo "::error::Patch 涓嶅瓨鍦? $patch_path"
             exit 1
           fi
           
-          echo "==> 正在应用: $patch_file"
+          echo "==> 姝ｅ湪搴旂敤: $patch_file"
           if patch -p1 --forward < "$patch_path"; then
-            echo "==> Patch 应用成功: $patch_file"
+            echo "==> Patch 搴旂敤鎴愬姛: $patch_file"
           else
-            echo "::error::Patch 应用失败: $patch_file"
+            echo "::error::Patch 搴旂敤澶辫触: $patch_file"
             exit 1
           fi
-          echo "==> Droidspaces patch 添加完成"
+          echo "==> Droidspaces patch 娣诲姞瀹屾垚"
 
-      - name: 🔧 Apply ntsync Patch (应用 ntsync 补丁)
+      - name: 馃敡 Apply ntsync Patch (搴旂敤 ntsync 琛ヤ竵)
         if: ${{ env.ENABLE_DROIDSPACES == 'true' }}
         working-directory: kernel_workspace/common
         run: |
-          echo "==> 开始应用 ntsync 补丁..."
+          echo "==> 寮€濮嬪簲鐢?ntsync 琛ヤ竵..."
           for PATCH_NAME in "ntsync_base.patch" "ntsync_compat_6.6.patch"; do
             PATCH_PATH="${GITHUB_WORKSPACE}/patch/${PATCH_NAME}"
             if [ ! -f "$PATCH_PATH" ]; then
-              echo "::error::未找到 ntsync 补丁: $PATCH_PATH"
+              echo "::error::鏈壘鍒?ntsync 琛ヤ竵: $PATCH_PATH"
               exit 1
             fi
-            echo "  应用: $PATCH_NAME"
+            echo "  搴旂敤: $PATCH_NAME"
             dos2unix "$PATCH_PATH"
             if ! git apply --ignore-whitespace "$PATCH_PATH"; then
-              echo "::warning::补丁 $PATCH_NAME 应用失败，可能已应用或上下文不匹配"
+              echo "::warning::琛ヤ竵 $PATCH_NAME 搴旂敤澶辫触锛屽彲鑳藉凡搴旂敤鎴栦笂涓嬫枃涓嶅尮閰?
             fi
           done
-          echo "==> ntsync 补丁应用完成"
+          echo "==> ntsync 琛ヤ竵搴旂敤瀹屾垚"
 
-      - name: 🔧 Set gki_defconfig (设置编译配置) 
+      - name: 馃敡 Set gki_defconfig (璁剧疆缂栬瘧閰嶇疆) 
         run: |
           cd kernel_workspace
           
@@ -610,13 +608,13 @@ jobs:
               echo "CONFIG_KSU_SUSFS_OPEN_REDIRECT=y" >> ./common/arch/arm64/configs/gki_defconfig
               echo "CONFIG_KSU_SUSFS_SUS_MAP=y" >> ./common/arch/arm64/configs/gki_defconfig
             else
-              echo "未启用SUSFS 跳过SUSFS配置"
+              echo "鏈惎鐢⊿USFS 璺宠繃SUSFS閰嶇疆"
             fi
           else
-            echo "未启用KSU，将不会集成Root及SUSFS"
+            echo "鏈惎鐢↘SU锛屽皢涓嶄細闆嗘垚Root鍙奡USFS"
           fi
           if [ "${{ env.ENABLE_DROIDSPACES }}" == 'true' ];then
-            echo "应用Droidspaces推荐配置"
+            echo "搴旂敤Droidspaces鎺ㄨ崘閰嶇疆"
             echo "CONFIG_SYSVIPC=y" >> ./common/arch/arm64/configs/gki_defconfig
             echo "CONFIG_POSIX_MQUEUE=y" >> ./common/arch/arm64/configs/gki_defconfig
             echo "CONFIG_IPC_NS=y" >> ./common/arch/arm64/configs/gki_defconfig
@@ -630,7 +628,7 @@ jobs:
             echo "CONFIG_IP_SET_HASH_IP=y" >> ./common/arch/arm64/configs/gki_defconfig
             echo "CONFIG_IP_SET_HASH_NET=y" >> ./common/arch/arm64/configs/gki_defconfig
             echo "CONFIG_NETFILTER_XT_SET=y" >> ./common/arch/arm64/configs/gki_defconfig
-            # ntsync 驱动 (Droidspaces 配套组件)
+            # ntsync 椹卞姩 (Droidspaces 閰嶅缁勪欢)
             echo "CONFIG_NTSYNC=y" >> ./common/arch/arm64/configs/gki_defconfig
           fi
           echo "CONFIG_TMPFS_XATTR=y" >> ./common/arch/arm64/configs/gki_defconfig
@@ -641,33 +639,32 @@ jobs:
           #Remove check_defconfig
           sudo sed -i 's/check_defconfig//' ./common/build.config.gki
 
-      - name: 🔧 Set Kernel name (设置内核名称)
+      - name: 馃敡 Set Kernel name (璁剧疆鍐呮牳鍚嶇О)
         run: |
           cd kernel_workspace
-          echo "内核后缀：$DEFAULT_SUFFIX"
+          echo "鍐呮牳鍚庣紑锛?DEFAULT_SUFFIX"
           ESCAPED_SUFFIX=$(printf '%s\n' "$DEFAULT_SUFFIX" | sed 's:[\/&]:\\&:g')
           sudo sed -i "s/-4k/$ESCAPED_SUFFIX/g" ./common/arch/arm64/configs/gki_defconfig
           sed -i 's/${scm_version}//' ./common/scripts/setlocalversion
 
-      - name: 📥 Start build timer (构建计时开始)
+      - name: 馃摜 Start build timer (鏋勫缓璁℃椂寮€濮?
         run: 
           echo "BUILD_START=$(date +%s)" >> $GITHUB_ENV
 
-      # 新版 clang 对旧 libbpf 的 const 限定符告警会因 -Werror 变成硬错误
-      # （tools/bpf/resolve_btfids 的 libbpf.c 只用于生成 BTF，放宽 -Werror 不影响内核代码）
-      - name: 🩹 Relax libbpf -Werror (兼容新版 clang)
+      # 鏂扮増 clang 瀵规棫 libbpf 鐨?const 闄愬畾绗﹀憡璀︿細鍥?-Werror 鍙樻垚纭敊璇?      # 锛坱ools/bpf/resolve_btfids 鐨?libbpf.c 鍙敤浜庣敓鎴?BTF锛屾斁瀹?-Werror 涓嶅奖鍝嶅唴鏍镐唬鐮侊級
+      - name: 馃┕ Relax libbpf -Werror (鍏煎鏂扮増 clang)
         run: |
           F="kernel_workspace/common/tools/lib/bpf/Makefile"
           if [ -f "$F" ]; then
             sed -i 's/^override CFLAGS += -Werror -Wall$/override CFLAGS += -Wall/' "$F"
-            echo "==> 已处理 $F"
+            echo "==> 宸插鐞?$F"
             grep -n 'override CFLAGS += ' "$F" || true
           else
-            echo "::warning::未找到 $F"
+            echo "::warning::鏈壘鍒?$F"
           fi
 
 
-      - name: 🔨 Build Kernel (构建内核)
+      - name: 馃敤 Build Kernel (鏋勫缓鍐呮牳)
         run: |
           WORKDIR="$(pwd)"
           export PATH="/usr/lib/ccache:$PATH"
@@ -676,7 +673,7 @@ jobs:
           CLANG_DIR="$WORKDIR/kernel_workspace/clang18/bin"
           CLANG_VERSION="$($CLANG_DIR/clang --version | head -n 1)"
           LLD_VERSION="$($CLANG_DIR/ld.lld --version | head -n 1)"
-          pahole_version=$(pahole --version 2>/dev/null | head -n1); [ -z "$pahole_version" ] && echo "pahole 版本：未安装" || echo "pahole 版本：$pahole_version"
+          pahole_version=$(pahole --version 2>/dev/null | head -n1); [ -z "$pahole_version" ] && echo "pahole 鐗堟湰锛氭湭瀹夎" || echo "pahole 鐗堟湰锛?pahole_version"
           export CCACHE_LOGFILE="${{ github.workspace }}/kernel_workspace/ccache.log"
           export CCACHE_COMPILERCHECK="none"
           export CCACHE_BASEDIR="${{ github.workspace }}"
@@ -710,7 +707,7 @@ jobs:
           echo 'export LD_PRELOAD="'$PRELOAD_LIBS'"' >> test-wrapper.sh
           echo 'export FAKESTAT="'$FAKESTAT'"' >> test-wrapper.sh
           echo 'export FAKETIME="'$FAKETIME'"' >> test-wrapper.sh
-          echo 'echo ">>> Wrapper 内部环境检查完毕."' >> test-wrapper.sh
+          echo 'echo ">>> Wrapper 鍐呴儴鐜妫€鏌ュ畬姣?"' >> test-wrapper.sh
           echo 'exec "$@"' >> test-wrapper.sh
           chmod +x test-wrapper.sh
           ./test-wrapper.sh date
@@ -724,52 +721,40 @@ jobs:
           sudo rm -rf /opt/hostedtoolcache/CodeQL &
           make -j$(nproc --all) LLVM=1 ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- CC="ccache clang" LD="ld.lld" HOSTLD=ld.lld O=out KCFLAGS+=-O2 KCFLAGS+=-Wno-error gki_defconfig &&
           if [ "${{ env.ENABLE_DROIDSPACES }}" = "true" ]; then
-            echo "===== 强制写入容器所需配置 (scripts/config) ====="
-            ./scripts/config --file out/.config \
-              -e PID_NS -e IPC_NS -e SYSVIPC -e SYSVIPC_SYSCTL \
-              -e POSIX_MQUEUE -e DEVTMPFS -e TMPFS_XATTR -e TMPFS_POSIX_ACL -e USER_NS
-            make -j$(nproc --all) LLVM=1 ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- O=out olddefconfig
-            echo "===== 写入后核对 ====="
-            grep -E "CONFIG_(PID_NS|IPC_NS|SYSVIPC|DEVTMPFS|POSIX_MQUEUE)" out/.config || true
-            if grep -qE "^CONFIG_(PID_NS|IPC_NS|SYSVIPC)=y" out/.config; then
-              echo "OK: 命名空间配置已生效"
-            else
-              echo "::error::配置未能生效，构建中止"
-              exit 1
-            fi
+            bash "$GITHUB_WORKSPACE/.github/scripts/force_container_configs.sh" || exit 1
           fi &&
           make -j$(nproc --all) LLVM=1 ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- CC="$(pwd)/cc-wrapper" LD="$(pwd)/ld-wrapper" HOSTLD=ld.lld O=out KCFLAGS+=-O2 KCFLAGS+=-Wno-error Image
           LD_PRELOAD=$PRELOAD_LIBS stat ./Makefile
-          echo "ccache 状态："
+          echo "ccache 鐘舵€侊細"
           ccache -s
       
-      - name: 🕒 Calculate build time (计算构建时间)
+      - name: 馃晵 Calculate build time (璁＄畻鏋勫缓鏃堕棿)
         run: |
           END=$(date +%s)
           TIME=$((END - BUILD_START))
           echo "BUILD_TIME=$TIME" >> $GITHUB_ENV
           echo "Build time: $TIME seconds"
 
-      - name: 📋 Dump key configs (输出关键配置项)
+      - name: 馃搵 Dump key configs (杈撳嚭鍏抽敭閰嶇疆椤?
         if: always()
         run: |
           O="kernel_workspace/common/out"
           if [ -f "$O/.config" ]; then
-            echo "===== 关键配置(已设置) ====="
+            echo "===== 鍏抽敭閰嶇疆(宸茶缃? ====="
             grep -E '^CONFIG_(PID_NS|IPC_NS|SYSVIPC|SYSVIPC_SYSCTL|DEVTMPFS|NTSYNC|USER_NS|TMPFS_XATTR|TMPFS_POSIX_ACL|GKI_DYNAMIC_TASK_STRUCT_SIZE|ARCH_WANTS_DYNAMIC_TASK_STRUCT|MODULE_SCMVERSION|TRIM_UNUSED_KSYMS|MODVERSIONS|ARM64_4K_PAGES)=' "$O/.config" || true
-            echo "===== 关键配置(未设置) ====="
-            grep -E '^# CONFIG_(PID_NS|IPC_NS|SYSVIPC|DEVTMPFS|NTSYNC) is not set' "$O/.config" || echo "(无)"
+            echo "===== 鍏抽敭閰嶇疆(鏈缃? ====="
+            grep -E '^# CONFIG_(PID_NS|IPC_NS|SYSVIPC|DEVTMPFS|NTSYNC) is not set' "$O/.config" || echo "(鏃?"
           else
-            echo "::warning::未找到 $O/.config"
+            echo "::warning::鏈壘鍒?$O/.config"
           fi
-          echo "===== 镜像 ====="
-          ls -l "$O/arch/arm64/boot/Image" 2>/dev/null || echo "(无 Image)"
+          echo "===== 闀滃儚 ====="
+          ls -l "$O/arch/arm64/boot/Image" 2>/dev/null || echo "(鏃?Image)"
           sha256sum "$O/arch/arm64/boot/Image" 2>/dev/null || true
-          echo "===== KMI 符号是否存在于源码 Kconfig ====="
-          grep -rln "GKI_DYNAMIC_TASK_STRUCT_SIZE" --include="Kconfig*" kernel_workspace/common 2>/dev/null | head -3 || echo "(源码中未定义)"
-          grep -rln "ARCH_WANTS_DYNAMIC_TASK_STRUCT" --include="Kconfig*" kernel_workspace/common 2>/dev/null | head -3 || echo "(源码中未定义)"
+          echo "===== KMI 绗﹀彿鏄惁瀛樺湪浜庢簮鐮?Kconfig ====="
+          grep -rln "GKI_DYNAMIC_TASK_STRUCT_SIZE" --include="Kconfig*" kernel_workspace/common 2>/dev/null | head -3 || echo "(婧愮爜涓湭瀹氫箟)"
+          grep -rln "ARCH_WANTS_DYNAMIC_TASK_STRUCT" --include="Kconfig*" kernel_workspace/common 2>/dev/null | head -3 || echo "(婧愮爜涓湭瀹氫箟)"
 
-      - name: 📤 Upload raw Image (上传原始镜像供本地体检)
+      - name: 馃摛 Upload raw Image (涓婁紶鍘熷闀滃儚渚涙湰鍦颁綋妫€)
         if: always()
         uses: actions/upload-artifact@v4
         with:
@@ -780,14 +765,14 @@ jobs:
           if-no-files-found: warn
           retention-days: 3
 
-      - name: 📥 Save ccache if needed (构建时间较长或首次落地本地缓存时保存)
+      - name: 馃摜 Save ccache if needed (鏋勫缓鏃堕棿杈冮暱鎴栭娆¤惤鍦版湰鍦扮紦瀛樻椂淇濆瓨)
         if: ${{ env.BUILD_TIME > 480 || steps.ccache-restore.outputs.cache-matched-key == '' }}
         uses: actions/cache/save@v5
         with:
           path: ${{ env.CCACHE_DIR }}
           key: ccache-${{ env.DEVICES_NAME }}${{ env.CACHE_VARIANT }}-${{ github.run_id }}
 
-      - name: 🧹 Clean old ccache (清理旧缓存)
+      - name: 馃Ч Clean old ccache (娓呯悊鏃х紦瀛?
         if: env.BUILD_TIME > 480
         uses: actions/github-script@v8
         env:
@@ -801,8 +786,8 @@ jobs:
             let page = 1;
             let deleted = 0;
 
-            core.info('构建时间超过 8 分钟，已保存 ccache 缓存');
-            core.info(`正在清理旧缓存，匹配前缀：${prefix}`);
+            core.info('鏋勫缓鏃堕棿瓒呰繃 8 鍒嗛挓锛屽凡淇濆瓨 ccache 缂撳瓨');
+            core.info(`姝ｅ湪娓呯悊鏃х紦瀛橈紝鍖归厤鍓嶇紑锛?{prefix}`);
 
             while (true) {
               const response = await github.rest.actions.getActionsCacheList({
@@ -834,16 +819,16 @@ jobs:
               page++;
             }
 
-            core.info(`旧缓存清理完成，共删除 ${deleted} 个缓存`);
+            core.info(`鏃х紦瀛樻竻鐞嗗畬鎴愶紝鍏卞垹闄?${deleted} 涓紦瀛榒);
 
-      - name: 📦 Make AnyKernel3 (创建Anykernel3)
+      - name: 馃摝 Make AnyKernel3 (鍒涘缓Anykernel3)
         run: |
           cp "${GITHUB_WORKSPACE}/.github/workflows/tools/main.bin" ./
           chmod +x main.bin
           ./main.bin "make_anykernel3"
           rm -rf ./main.bin
           
-      - name: 📤 Upload AnyKernel3 (上传 Anykernel3)
+      - name: 馃摛 Upload AnyKernel3 (涓婁紶 Anykernel3)
         uses: actions/upload-artifact@v6
         with:
          name: AK3_${{ env.KSUVER }}_${{ env.DEVICES_NAME }}_ReSukiSU
@@ -855,7 +840,7 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     steps:
-      - name: 🔎 Find Re-Kernel module zip (查找Re-Kernel最新模块并下载)
+      - name: 馃攷 Find Re-Kernel module zip (鏌ユ壘Re-Kernel鏈€鏂版ā鍧楀苟涓嬭浇)
         id: download-rekernel
         uses: actions/github-script@v8
         env:
@@ -866,13 +851,13 @@ jobs:
             const repo = 'Re-Kernel';
             const kernelMajor = process.env.KERNEL_MAJOR;
 
-            core.info(`正在获取 ${owner}/${repo} 的最新 release...`);
+            core.info(`姝ｅ湪鑾峰彇 ${owner}/${repo} 鐨勬渶鏂?release...`);
 
             const release = await github.rest.repos.getLatestRelease({
               owner,
               repo,
             });
-            core.info(`最新版本: ${release.data.tag_name}`);
+            core.info(`鏈€鏂扮増鏈? ${release.data.tag_name}`);
             const escapedKernel = kernelMajor.replace(/\./g, '\\.');
             const pattern66 = new RegExp(`^Re-Kernel-v([\\d.]+)-${escapedKernel}\\.zip$`);
             const patternAny = new RegExp(`^Re-Kernel.*\\.zip$`, 'i');
@@ -887,36 +872,36 @@ jobs:
                 targetAsset = asset;
                 versionNumber = match[1];
                 isExactMatch = true;
-                core.info(`找到精确匹配 6.6: ${asset.name}`);
+                core.info(`鎵惧埌绮剧‘鍖归厤 6.6: ${asset.name}`);
                 break;
               }
             }
 
             if (!targetAsset) {
-              core.info('未找到6.6版本，查找任意Re-Kernel模块...');
+              core.info('鏈壘鍒?.6鐗堟湰锛屾煡鎵句换鎰廟e-Kernel妯″潡...');
               for (const asset of release.data.assets || []) {
                 const match = asset.name.match(patternAny);
                 if (match) {
                   targetAsset = asset;
                   versionNumber = asset.name.replace(/Re-Kernel-v|.zip/gi, '').replace(/^-/, '').replace(/-$/, '') || 'latest';
                   isExactMatch = false;
-                  core.info(`找到Re-Kernel模块: ${asset.name}`);
+                  core.info(`鎵惧埌Re-Kernel妯″潡: ${asset.name}`);
                   break;
                 }
               }
             }
 
             if (!targetAsset) {
-              core.setFailed('未找到任何 Re-Kernel 模块资产');
+              core.setFailed('鏈壘鍒颁换浣?Re-Kernel 妯″潡璧勪骇');
               return;
             }
 
-            core.info(`找到目标资产: ${targetAsset.name} (版本: ${versionNumber}, ${(targetAsset.size / 1024).toFixed(1)} KB)`);
+            core.info(`鎵惧埌鐩爣璧勪骇: ${targetAsset.name} (鐗堟湰: ${versionNumber}, ${(targetAsset.size / 1024).toFixed(1)} KB)`);
             core.setOutput('asset-name', targetAsset.name);
             core.setOutput('download-url', targetAsset.browser_download_url);
             core.setOutput('version-number', versionNumber);
 
-      - name: 📥 Download Re-Kernel module (下载 Re-Kernel 模块)
+      - name: 馃摜 Download Re-Kernel module (涓嬭浇 Re-Kernel 妯″潡)
         env:
           ASSET_NAME: ${{ steps.download-rekernel.outputs.asset-name }}
           DOWNLOAD_URL: ${{ steps.download-rekernel.outputs.download-url }}
@@ -924,26 +909,26 @@ jobs:
         run: |
           set -euo pipefail
           ARTIFACT_NAME="Re-Kernel-v${VERSION_NUMBER}"
-          echo "正在下载 Re-Kernel 模块: $ASSET_NAME"
-          echo "下载地址: $DOWNLOAD_URL"
-          echo "Artifact 名称: $ARTIFACT_NAME"
+          echo "姝ｅ湪涓嬭浇 Re-Kernel 妯″潡: $ASSET_NAME"
+          echo "涓嬭浇鍦板潃: $DOWNLOAD_URL"
+          echo "Artifact 鍚嶇О: $ARTIFACT_NAME"
           aria2c -s16 -x16 -k1M "$DOWNLOAD_URL" -o "$ASSET_NAME"
-          echo "✓ Re-Kernel 模块下载完成"
+          echo "鉁?Re-Kernel 妯″潡涓嬭浇瀹屾垚"
           ls -lh "$ASSET_NAME"
-          echo "正在创建目录 $ARTIFACT_NAME 并解压模块..."
+          echo "姝ｅ湪鍒涘缓鐩綍 $ARTIFACT_NAME 骞惰В鍘嬫ā鍧?.."
           mkdir -p "$ARTIFACT_NAME"
           unzip -q "$ASSET_NAME" -d "$ARTIFACT_NAME"
-          echo "✓ 目录结构:"
+          echo "鉁?鐩綍缁撴瀯:"
           ls -lR "$ARTIFACT_NAME"
 
-      - name: 📤 Upload Re-Kernel module (上传 Re-Kernel 模块)
+      - name: 馃摛 Upload Re-Kernel module (涓婁紶 Re-Kernel 妯″潡)
         uses: actions/upload-artifact@v6
         with:
           name: Re-Kernel-v${{ steps.download-rekernel.outputs.version-number }}
           path: Re-Kernel-v${{ steps.download-rekernel.outputs.version-number }}
 
   release:
-    name: 📤 Create Release (创建发布)
+    name: 馃摛 Create Release (鍒涘缓鍙戝竷)
     needs: [build, upload_rekernel]
     if: ${{ github.event.inputs.enable_release == 'true' && always() && needs.build.result != 'failure' }}
     runs-on: ubuntu-latest
@@ -951,143 +936,133 @@ jobs:
       contents: write
       actions: read
     steps:
-      - name: 📥 Download all artifacts (下载所有构建产物)
+      - name: 馃摜 Download all artifacts (涓嬭浇鎵€鏈夋瀯寤轰骇鐗?
         uses: actions/download-artifact@v5
         with:
           pattern: "*"
           path: ./release_assets
 
-      - name: 📦 Prepare release files (准备发布文件)
+      - name: 馃摝 Prepare release files (鍑嗗鍙戝竷鏂囦欢)
         run: |
-          echo "=== 下载的产物列表 ==="
+          echo "=== 涓嬭浇鐨勪骇鐗╁垪琛?==="
           ls -la ./release_assets/
           echo ""
 
-          # 为每个 AK3 目录创建 zip 包
-          for ak3_dir in ./release_assets/AK3_*/; do
+          # 涓烘瘡涓?AK3 鐩綍鍒涘缓 zip 鍖?          for ak3_dir in ./release_assets/AK3_*/; do
             if [ -d "$ak3_dir" ]; then
               name=$(basename "$ak3_dir")
-              echo "打包 AK3: $name"
+              echo "鎵撳寘 AK3: $name"
               (cd "$ak3_dir" && zip -qr "../${name}.zip" .)
             fi
           done
 
-          # 如果 Re-Kernel 模块存在，打包为 zip
+          # 濡傛灉 Re-Kernel 妯″潡瀛樺湪锛屾墦鍖呬负 zip
           for rk_dir in ./release_assets/Re-Kernel-v*/; do
             if [ -d "$rk_dir" ]; then
               name=$(basename "$rk_dir")
-              echo "打包 Re-Kernel: $name"
+              echo "鎵撳寘 Re-Kernel: $name"
               (cd "$rk_dir" && zip -qr "../${name}.zip" .)
             fi
           done
 
-          # 列出所有待上传的文件
-          echo ""
-          echo "=== 待上传到 Release 的文件 ==="
+          # 鍒楀嚭鎵€鏈夊緟涓婁紶鐨勬枃浠?          echo ""
+          echo "=== 寰呬笂浼犲埌 Release 鐨勬枃浠?==="
           find ./release_assets -maxdepth 1 -type f | sort
 
-      - name: 🏷️ Create Release and Upload Assets (创建发布并上传)
+      - name: 馃彿锔?Create Release and Upload Assets (鍒涘缓鍙戝竷骞朵笂浼?
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
 
-          # 时间戳
-          TIME="$(TZ='Asia/Shanghai' date +'%y%m%d%H%M%S')"
+          # 鏃堕棿鎴?          TIME="$(TZ='Asia/Shanghai' date +'%y%m%d%H%M%S')"
           TIME_FORM="$(TZ='Asia/Shanghai' date +'%Y-%m-%d %H:%M:%S')"
 
-          # 编译机型
+          # 缂栬瘧鏈哄瀷
           DEVICE_NAME="${{ github.event.inputs.device_name }}"
 
-          # KSU 版本号（来自 build job 输出的 ksuver）
-          KSU_VER="${{ needs.build.outputs.ksuver }}"
+          # KSU 鐗堟湰鍙凤紙鏉ヨ嚜 build job 杈撳嚭鐨?ksuver锛?          KSU_VER="${{ needs.build.outputs.ksuver }}"
 
-          # 功能配置描述
+          # 鍔熻兘閰嶇疆鎻忚堪
           FEATURES=""
           if [ "${{ github.event.inputs.enable_ReKernel }}" = "true" ]; then
-            FEATURES="${FEATURES}- ✅ Re-Kernel 支持"$'\n'
+            FEATURES="${FEATURES}- 鉁?Re-Kernel 鏀寔"$'\n'
           fi
           if [ "${{ github.event.inputs.enable_Adios }}" = "true" ]; then
-            FEATURES="${FEATURES}- ✅ ADIOS IO调度器"$'\n'
+            FEATURES="${FEATURES}- 鉁?ADIOS IO璋冨害鍣?$'\n'
           fi
           if [ "${{ github.event.inputs.enable_scx }}" = "true" ] || [ "${{ github.event.inputs.enable_droidspaces }}" = "true" ]; then
-            FEATURES="${FEATURES}- ✅ 完美风驰 (SCX)"$'\n'
+            FEATURES="${FEATURES}- 鉁?瀹岀編椋庨┌ (SCX)"$'\n'
           fi
           if [ "${{ github.event.inputs.enable_bbg }}" = "true" ]; then
-            FEATURES="${FEATURES}- ✅ BBG 基带守护"$'\n'
+            FEATURES="${FEATURES}- 鉁?BBG 鍩哄甫瀹堟姢"$'\n'
           fi
           if [ "${{ github.event.inputs.enable_droidspaces }}" = "true" ]; then
-            FEATURES="${FEATURES}- ✅ Droidspaces 容器支持"$'\n'
+            FEATURES="${FEATURES}- 鉁?Droidspaces 瀹瑰櫒鏀寔"$'\n'
           fi
-          FEATURES="${FEATURES}- ✅ ReSukiSU (KernelSU)"$'\n'
+          FEATURES="${FEATURES}- 鉁?ReSukiSU (KernelSU)"$'\n'
           if [ "${{ github.event.inputs.enable_susfs }}" = "true" ]; then
-            FEATURES="${FEATURES}- ✅ SUSFS 挂载支持"$'\n'
+            FEATURES="${FEATURES}- 鉁?SUSFS 鎸傝浇鏀寔"$'\n'
           fi
 
-          # 自定义内核后缀
+          # 鑷畾涔夊唴鏍稿悗缂€
           KERNEL_SUFFIX="${{ github.event.inputs.custom_kernel_suffix }}"
           if [ -z "$KERNEL_SUFFIX" ]; then
-            KERNEL_SUFFIX="默认官方"
+            KERNEL_SUFFIX="榛樿瀹樻柟"
           fi
 
-          # 自定义构建时间
-          KERNEL_TIME="${{ github.event.inputs.custom_kernel_time }}"
+          # 鑷畾涔夋瀯寤烘椂闂?          KERNEL_TIME="${{ github.event.inputs.custom_kernel_time }}"
           if [ -z "$KERNEL_TIME" ]; then
-            KERNEL_TIME="默认官方"
+            KERNEL_TIME="榛樿瀹樻柟"
           fi
 
-          # 生成 Release 说明
+          # 鐢熸垚 Release 璇存槑
           cat << ENDOFF > release_notes.md
-          ### 📱 SM8750 欧加真通用内核 | 构建信息
+          ### 馃摫 SM8750 娆у姞鐪熼€氱敤鍐呮牳 | 鏋勫缓淇℃伅
 
-          - **内核版本**: SM8750 (Android 15 / 6.6)
-          - **ReSukiSU 版本**: ${KSU_VER}
-          - **编译时间**: ${TIME_FORM}
-          - **编译机型**: ${DEVICE_NAME}
-          - **内核后缀**: ${KERNEL_SUFFIX}
-          - **构建时间**: ${KERNEL_TIME}
-          - **仓库**: ${{ github.repository }}
-          - **运行 ID**: ${{ github.run_id }}
-          - **提交**: ${{ github.sha }}
+          - **鍐呮牳鐗堟湰**: SM8750 (Android 15 / 6.6)
+          - **ReSukiSU 鐗堟湰**: ${KSU_VER}
+          - **缂栬瘧鏃堕棿**: ${TIME_FORM}
+          - **缂栬瘧鏈哄瀷**: ${DEVICE_NAME}
+          - **鍐呮牳鍚庣紑**: ${KERNEL_SUFFIX}
+          - **鏋勫缓鏃堕棿**: ${KERNEL_TIME}
+          - **浠撳簱**: ${{ github.repository }}
+          - **杩愯 ID**: ${{ github.run_id }}
+          - **鎻愪氦**: ${{ github.sha }}
 
-          ### ⚙️ 功能配置
+          ### 鈿欙笍 鍔熻兘閰嶇疆
 
           ${FEATURES}
-          ### ⏫️ 更新内容
+          ### 鈴笍 鏇存柊鍐呭
 
-          - 更新 ReSukiSU 至最新版本 (${KSU_VER})
-          - 同步上游内核源码
+          - 鏇存柊 ReSukiSU 鑷虫渶鏂扮増鏈?(${KSU_VER})
+          - 鍚屾涓婃父鍐呮牳婧愮爜
 
-          ### 📋 安装方法 | Installation Guide
+          ### 馃搵 瀹夎鏂规硶 | Installation Guide
 
-          1. 若你已刷入 ReSukiSU 内核，且 ReSukiSU 管理器已更新至最新版本，可在管理器中直接刷入 AnyKernel 刷机包并重启；
-          2. 由于 KernelSU 上游更新了元模块功能，最新版 KSU 管理器需要配合元模块 (metamodule) 才能正常挂载模块。目前的元模块包括 [meta overlayfs](https://github.com/KernelSU-Modules-Repo/meta-overlayfs), [mountify](https://github.com/backslashxx/mountify), [meta magicmount](https://github.com/7a72/meta-magic_mount/) 等。若你是第一次使用 KSU 或刚从旧版 KSU 管理器升级至新版，请先安装一个元模块；
-          3. 若启用 Re-Kernel，需刷入配套Re-Kernel模块并配合 NoActive 软件使用，以提升后台冻结能力。
+          1. 鑻ヤ綘宸插埛鍏?ReSukiSU 鍐呮牳锛屼笖 ReSukiSU 绠＄悊鍣ㄥ凡鏇存柊鑷虫渶鏂扮増鏈紝鍙湪绠＄悊鍣ㄤ腑鐩存帴鍒峰叆 AnyKernel 鍒锋満鍖呭苟閲嶅惎锛?          2. 鐢变簬 KernelSU 涓婃父鏇存柊浜嗗厓妯″潡鍔熻兘锛屾渶鏂扮増 KSU 绠＄悊鍣ㄩ渶瑕侀厤鍚堝厓妯″潡 (metamodule) 鎵嶈兘姝ｅ父鎸傝浇妯″潡銆傜洰鍓嶇殑鍏冩ā鍧楀寘鎷?[meta overlayfs](https://github.com/KernelSU-Modules-Repo/meta-overlayfs), [mountify](https://github.com/backslashxx/mountify), [meta magicmount](https://github.com/7a72/meta-magic_mount/) 绛夈€傝嫢浣犳槸绗竴娆′娇鐢?KSU 鎴栧垰浠庢棫鐗?KSU 绠＄悊鍣ㄥ崌绾ц嚦鏂扮増锛岃鍏堝畨瑁呬竴涓厓妯″潡锛?          3. 鑻ュ惎鐢?Re-Kernel锛岄渶鍒峰叆閰嶅Re-Kernel妯″潡骞堕厤鍚?NoActive 杞欢浣跨敤锛屼互鎻愬崌鍚庡彴鍐荤粨鑳藉姏銆?
+          #### 馃敆 鐩稿叧閾炬帴
 
-          #### 🔗 相关链接
+          - ReSukiSU 绠＄悊鍣? [ReSukiSU_CI](https://github.com/cctv18/ReSukiSU_CI/releases)
+          - SukiSU Ultra 绠＄悊鍣? [SukiSU-Ultra](https://github.com/SukiSU-Ultra/SukiSU-Ultra/releases)
+          - KernelSU Next 绠＄悊鍣? [KernelSU-Next](https://github.com/KernelSU-Next/KernelSU-Next/releases)
+          - KernelSU 鍘熺増绠＄悊鍣? [KernelSU](https://github.com/tiann/KernelSU/releases)
+          - TG棰戦亾@qdykernel: [TG棰戦亾@qdykernel](https://t.me/qdykernel)
 
-          - ReSukiSU 管理器: [ReSukiSU_CI](https://github.com/cctv18/ReSukiSU_CI/releases)
-          - SukiSU Ultra 管理器: [SukiSU-Ultra](https://github.com/SukiSU-Ultra/SukiSU-Ultra/releases)
-          - KernelSU Next 管理器: [KernelSU-Next](https://github.com/KernelSU-Next/KernelSU-Next/releases)
-          - KernelSU 原版管理器: [KernelSU](https://github.com/tiann/KernelSU/releases)
-          - TG频道@qdykernel: [TG频道@qdykernel](https://t.me/qdykernel)
+          #### 鈥烩€烩€?鍒峰啓鍐呮牳鏈夐闄╋紝涓洪槻姝㈠嚭鐜版剰澶栧鑷存墜鏈哄彉鐮栵紝鍦ㄥ埛鍏ュ唴鏍稿墠璇峰姟蹇呯敤 [KernelFlasher](https://github.com/capntrips/KernelFlasher) 绛夎蒋浠跺浠?boot 绛夊叧閿惎鍔ㄥ垎鍖? 鈥烩€烩€?          ENDOFF
 
-          #### ※※※ 刷写内核有风险，为防止出现意外导致手机变砖，在刷入内核前请务必用 [KernelFlasher](https://github.com/capntrips/KernelFlasher) 等软件备份 boot 等关键启动分区! ※※※
-          ENDOFF
-
-          echo "=== Release 说明 ==="
+          echo "=== Release 璇存槑 ==="
           cat release_notes.md
           echo ""
 
-          # 收集所有待上传的文件（仅 AK3 zip 和 Re-Kernel zip）
-          RELEASE_FILES=$(find ./release_assets -maxdepth 1 -type f \( -name 'AK3_*.zip' -o -name 'Re-Kernel-v*.zip' \) 2>/dev/null || true)
+          # 鏀堕泦鎵€鏈夊緟涓婁紶鐨勬枃浠讹紙浠?AK3 zip 鍜?Re-Kernel zip锛?          RELEASE_FILES=$(find ./release_assets -maxdepth 1 -type f \( -name 'AK3_*.zip' -o -name 'Re-Kernel-v*.zip' \) 2>/dev/null || true)
 
           if [ -z "$RELEASE_FILES" ]; then
-            echo "::warning::没有找到待上传的发布文件"
+            echo "::warning::娌℃湁鎵惧埌寰呬笂浼犵殑鍙戝竷鏂囦欢"
             RELEASE_FILES=""
           fi
 
-          echo "=== 创建 Release ==="
+          echo "=== 鍒涘缓 Release ==="
           TAG_NAME="SM8750-${DEVICE_NAME}-build-${TIME}"
 
           gh release create "${TAG_NAME}" \
@@ -1097,4 +1072,4 @@ jobs:
             ${RELEASE_FILES}
 
           echo ""
-          echo "✅ Release 创建完成: ${TAG_NAME}"
+          echo "鉁?Release 鍒涘缓瀹屾垚: ${TAG_NAME}"
