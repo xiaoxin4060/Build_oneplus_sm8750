@@ -12,10 +12,11 @@ echo "===== [1/4] enable SYSVIPC first (IPC_NS depends on it) ====="
 $MK olddefconfig >/dev/null 2>&1 || { echo "::error::olddefconfig pass1 failed"; exit 1; }
 
 echo "===== [2/4] enable namespaces and container filesystems ====="
+# DEVTMPFS_MOUNT stays OFF to match stock: Android init manages /dev itself.
 ./scripts/config --file "$CFG" \
   -e PID_NS -e IPC_NS -e USER_NS -e UTS_NS -e NET_NS \
   -e POSIX_MQUEUE -e POSIX_MQUEUE_SYSCTL \
-  -e DEVTMPFS -e DEVTMPFS_MOUNT -e TMPFS -e TMPFS_XATTR -e TMPFS_POSIX_ACL
+  -e DEVTMPFS -d DEVTMPFS_MOUNT -e TMPFS -e TMPFS_XATTR -e TMPFS_POSIX_ACL
 
 echo "===== [3/4] probe OPlus dynamic task_struct (NOT in this OSS tree) ====="
 # This symbol only exists in OPlus internal trees; the OnePlusOSS branch has no
@@ -28,7 +29,7 @@ echo "===== [4/4] verify ====="
 grep -E '^CONFIG_(NAMESPACES|PID_NS|IPC_NS|USER_NS|UTS_NS|NET_NS|SYSVIPC|SYSVIPC_SYSCTL|POSIX_MQUEUE|DEVTMPFS|DEVTMPFS_MOUNT|TMPFS|TMPFS_XATTR|TMPFS_POSIX_ACL|GKI_DYNAMIC_TASK_STRUCT_SIZE|GKI_TASK_STRUCT_VENDOR_SIZE_MAX|MODULE_SCMVERSION)=' "$CFG" || true
 
 REQUIRED="NAMESPACES PID_NS IPC_NS SYSVIPC SYSVIPC_SYSCTL POSIX_MQUEUE DEVTMPFS TMPFS_XATTR TMPFS_POSIX_ACL"
-OPTIONAL="USER_NS DEVTMPFS_MOUNT UTS_NS NET_NS"
+OPTIONAL="USER_NS UTS_NS NET_NS"
 
 MISS=""
 for k in $REQUIRED; do
