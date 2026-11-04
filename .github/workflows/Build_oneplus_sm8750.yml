@@ -735,6 +735,33 @@ jobs:
           echo "BUILD_TIME=$TIME" >> $GITHUB_ENV
           echo "Build time: $TIME seconds"
 
+      - name: 📋 Dump key configs (输出关键配置项)
+        if: always()
+        run: |
+          O="kernel_workspace/common/out"
+          if [ -f "$O/.config" ]; then
+            echo "===== 关键配置(已设置) ====="
+            grep -E '^CONFIG_(PID_NS|IPC_NS|SYSVIPC|SYSVIPC_SYSCTL|DEVTMPFS|NTSYNC|USER_NS|TMPFS_XATTR|TMPFS_POSIX_ACL|GKI_DYNAMIC_TASK_STRUCT_SIZE|ARCH_WANTS_DYNAMIC_TASK_STRUCT|MODULE_SCMVERSION|TRIM_UNUSED_KSYMS|MODVERSIONS|ARM64_4K_PAGES)=' "$O/.config" || true
+            echo "===== 关键配置(未设置) ====="
+            grep -E '^# CONFIG_(PID_NS|IPC_NS|SYSVIPC|DEVTMPFS|NTSYNC) is not set' "$O/.config" || echo "(无)"
+          else
+            echo "::warning::未找到 $O/.config"
+          fi
+          echo "===== 镜像 ====="
+          ls -l "$O/arch/arm64/boot/Image" 2>/dev/null || echo "(无 Image)"
+          sha256sum "$O/arch/arm64/boot/Image" 2>/dev/null || true
+
+      - name: 📤 Upload raw Image (上传原始镜像供本地体检)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: raw_image_${{ env.DEVICES_NAME }}
+          path: |
+            kernel_workspace/common/out/arch/arm64/boot/Image
+            kernel_workspace/common/out/.config
+          if-no-files-found: warn
+          retention-days: 3
+
       - name: 📥 Save ccache if needed (构建时间较长或首次落地本地缓存时保存)
         if: ${{ env.BUILD_TIME > 480 || steps.ccache-restore.outputs.cache-matched-key == '' }}
         uses: actions/cache/save@v5
