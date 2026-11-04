@@ -17,17 +17,17 @@ echo "===== [2/4] enable namespaces and container filesystems ====="
   -e POSIX_MQUEUE -e POSIX_MQUEUE_SYSCTL \
   -e DEVTMPFS -e DEVTMPFS_MOUNT -e TMPFS -e TMPFS_XATTR -e TMPFS_POSIX_ACL
 
-echo "===== [3/4] restore OPlus dynamic task_struct (KMI, fixes stuck lockscreen) ====="
-echo "----- Kconfig source of GKI_DYNAMIC_TASK_STRUCT_SIZE -----"
-grep -rn -A14 "^config GKI_DYNAMIC_TASK_STRUCT_SIZE" --include="Kconfig*" . 2>/dev/null | head -20 || true
-./scripts/config --file "$CFG" -e GKI_DYNAMIC_TASK_STRUCT_SIZE
-./scripts/config --file "$CFG" --set-val GKI_TASK_STRUCT_VENDOR_SIZE_MAX 1024
+echo "===== [3/4] probe OPlus dynamic task_struct (NOT in this OSS tree) ====="
+# This symbol only exists in OPlus internal trees; the OnePlusOSS branch has no
+# such config, so it can never be enabled here. Probe and warn only.
+grep -rn "GKI_DYNAMIC_TASK_STRUCT_SIZE" --include="Kconfig*" . 2>/dev/null | head -3 \
+  || echo "(not defined in this source tree - expected)"
 $MK olddefconfig >/dev/null 2>&1 || { echo "::error::olddefconfig pass2 failed"; exit 1; }
 
 echo "===== [4/4] verify ====="
 grep -E '^CONFIG_(NAMESPACES|PID_NS|IPC_NS|USER_NS|UTS_NS|NET_NS|SYSVIPC|SYSVIPC_SYSCTL|POSIX_MQUEUE|DEVTMPFS|DEVTMPFS_MOUNT|TMPFS|TMPFS_XATTR|TMPFS_POSIX_ACL|GKI_DYNAMIC_TASK_STRUCT_SIZE|GKI_TASK_STRUCT_VENDOR_SIZE_MAX|MODULE_SCMVERSION)=' "$CFG" || true
 
-REQUIRED="NAMESPACES PID_NS IPC_NS SYSVIPC SYSVIPC_SYSCTL POSIX_MQUEUE DEVTMPFS TMPFS_XATTR TMPFS_POSIX_ACL GKI_DYNAMIC_TASK_STRUCT_SIZE"
+REQUIRED="NAMESPACES PID_NS IPC_NS SYSVIPC SYSVIPC_SYSCTL POSIX_MQUEUE DEVTMPFS TMPFS_XATTR TMPFS_POSIX_ACL"
 OPTIONAL="USER_NS DEVTMPFS_MOUNT UTS_NS NET_NS"
 
 MISS=""
@@ -35,10 +35,13 @@ for k in $REQUIRED; do
   grep -qE "^CONFIG_${k}=y" "$CFG" || MISS="$MISS $k"
 done
 
-# int type must be exactly 1024, otherwise vendor extension space is wrong
-if ! grep -qE "^CONFIG_GKI_TASK_STRUCT_VENDOR_SIZE_MAX=1024$" "$CFG"; then
-  MISS="$MISS GKI_TASK_STRUCT_VENDOR_SIZE_MAX(=1024)"
-fi
+# KMI parity with stock: not attainable on this OSS tree, warn only
+for k in GKI_DYNAMIC_TASK_STRUCT_SIZE; do
+  grep -qE "^CONFIG_${k}=y" "$CFG" \
+    || echo "::warning::$k unavailable in this source tree (OPlus internal patch)"
+done
+grep -qE "^CONFIG_GKI_TASK_STRUCT_VENDOR_SIZE_MAX=1024$" "$CFG" \
+  || echo "::warning::GKI_TASK_STRUCT_VENDOR_SIZE_MAX unavailable in this source tree"
 
 WARN=""
 for k in $OPTIONAL; do
